@@ -5,7 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList, StyleSheet, View, Text, ActivityIndicator } from "react-native";
 
 export default function Todos() {
-  const { userID } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
   const [user, setUser] = useState(null);
   const [todos, setTodos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -13,16 +13,16 @@ export default function Todos() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const dataUser = await AsyncStorage.getItem(`user/${userID}`);
+        const dataUser = await AsyncStorage.getItem(`user/${id}`);
         if (dataUser == null) {
-          const response = await fetch(`https://jsonplaceholder.typicode.com/todos?userId=${userID}`);
+          const response = await fetch(`https://jsonplaceholder.typicode.com/todos?userId=${id}`);
           if (!response.ok) {
             console.error("HTTP error! status:", response.status);
             return;
           }
 
           const todoData = await response.json();
-          await AsyncStorage.setItem(`user/${userID}`, JSON.stringify(todoData));
+          await AsyncStorage.setItem(`user/${id}`, JSON.stringify(todoData));
           setTodos(todoData);
           setIsLoading(false);
         } else {
@@ -37,18 +37,18 @@ export default function Todos() {
 
     const fetchUser = async () => {
       try {
-        const userInfo = await AsyncStorage.getItem(`userinfo/${userID}`);
+        const userInfo = await AsyncStorage.getItem(`userinfo/${id}`);
         if (userInfo) {
           setUser(JSON.parse(userInfo));
         } else {
-          const response = await fetch(`https://jsonplaceholder.typicode.com/users/${userID}`);
+          const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
           if (!response.ok) {
             console.error("HTTP error! status:", response.status);
             return;
           }
 
           const userData = await response.json();
-          await AsyncStorage.setItem(`userinfo/${userID}`, JSON.stringify(userData));
+          await AsyncStorage.setItem(`userinfo/${id}`, JSON.stringify(userData));
           setUser(userData);
         }
       } catch (error) {
@@ -58,7 +58,7 @@ export default function Todos() {
 
     fetchUser();
     fetchData();
-  }, [userID]);
+  }, [id]);
 
   
   if (isLoading) {
@@ -72,7 +72,7 @@ export default function Todos() {
   if (!user) {
     return (
       <View>
-        <Text>User not found</Text>
+        <Text>User not found - ${id}</Text>
       </View>
     );
   }

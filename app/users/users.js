@@ -12,9 +12,8 @@ import { router } from "expo-router";
 export default function Users({ users }) {
   const handleUserPress = (user) => {
     console.log(user);
-    router.push({
-    pathname:`/todos/${user.id}`,
-    params:  {userID: user.id}});
+    router.push(`/todos/${user.id}`,
+    );
   };
   return (
     <View style={styles.container}>
