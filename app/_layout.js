@@ -10,7 +10,7 @@ export default function RoutLayout (){
             options={{
                 headerTitle:"Details Page",
             }} />
-            <Stack.Screen name="zeyad/[id]" />
+           
         </Stack>
     )
 }

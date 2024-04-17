@@ -2,7 +2,13 @@ import { useLocalSearchParams } from "expo-router";
 import TodoItem from "./components/item";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { FlatList, StyleSheet, View, Text, ActivityIndicator } from "react-native";
+import {
+  FlatList,
+  StyleSheet,
+  View,
+  Text,
+  ActivityIndicator,
+} from "react-native";
 
 export default function Todos() {
   const { id } = useLocalSearchParams();
@@ -15,7 +21,9 @@ export default function Todos() {
       try {
         const dataUser = await AsyncStorage.getItem(`user/${id}`);
         if (dataUser == null) {
-          const response = await fetch(`https://jsonplaceholder.typicode.com/todos?userId=${id}`);
+          const response = await fetch(
+            `https://jsonplaceholder.typicode.com/todos?userId=${id}`
+          );
           if (!response.ok) {
             console.error("HTTP error! status:", response.status);
             return;
@@ -35,32 +43,47 @@ export default function Todos() {
       }
     };
 
-    const fetchUser = async () => {
-      try {
-        const userInfo = await AsyncStorage.getItem(`userinfo/${id}`);
-        if (userInfo) {
-          setUser(JSON.parse(userInfo));
-        } else {
-          const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
-          if (!response.ok) {
-            console.error("HTTP error! status:", response.status);
-            return;
-          }
+    // const fetchUser = async () => {
+    //   try {
+    //     const userInfo = await AsyncStorage.getItem(`userinfo/${id}`);
+    //     if (userInfo) {
+    //       setUser(JSON.parse(userInfo));
+    //     } else {
+    //       const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
+    //       if (!response.ok) {
+    //         console.error("HTTP error! status:", response.status);
+    //         return;
+    //       }
 
-          const userData = await response.json();
-          await AsyncStorage.setItem(`userinfo/${id}`, JSON.stringify(userData));
-          setUser(userData);
+    //       const userData = await response.json();
+    //       await AsyncStorage.setItem(`userinfo/${id}`, JSON.stringify(userData));
+    //       setUser(userData);
+    //     }
+    //   } catch (error) {
+    //     console.error("Error:", error);
+    //   }
+    // };
+    const fetchUser = async () => {
+      const catchUser = (user) => {
+        setUser(user);
+      };
+      try {
+        const temp = await AsyncStorage.getItem("user");
+        const users = JSON.parse(temp);
+
+        if (users) {
+          users.map((item) => {
+            if (item.id == id) catchUser(item);
+          });
         }
-      } catch (error) {
-        console.error("Error:", error);
+      } catch (e) {
+        console.error("AsyncStorage Error!", e);
       }
     };
-
     fetchUser();
     fetchData();
   }, [id]);
 
-  
   if (isLoading) {
     return (
       <View style={styles.loading}>
@@ -68,7 +91,7 @@ export default function Todos() {
       </View>
     );
   }
-  
+
   if (!user) {
     return (
       <View>
