@@ -21,6 +21,7 @@ export default function Todos() {
   const [todos, setTodos] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [textInputValue, setTextInputValue] = useState("");
+  
   useEffect(() => {
     const fetchuser = async () => {
       try {
@@ -29,7 +30,7 @@ export default function Todos() {
 
         if (userinfo) {
           setUser(userinfo);
-          setTodos(userinfo.Todos);
+          setTodos(userinfo.Todo);
         }
         setIsLoading(false);
       } catch (error) {
@@ -39,34 +40,38 @@ export default function Todos() {
 
     fetchuser();
   }, [id]);
-  const handleAddItem = () => {
+
+  const handleAddItem = async () => {
     if (textInputValue.trim() !== "") {
-     todos.push({
-          key: Date.now(),
-          todo: textInputValue,
-          done: false,
-        });
-        setTextInputValue("");
-        updateInfo(id, todos);
-      }
-    
+      const newTodo = {
+        key: Date.now().toString(),
+        todo: textInputValue,
+        done: false,
+      };
+      setTodos([...todos, newTodo]);
+      await updateInfo(id, [...todos, newTodo]);
+      setTextInputValue("");
+    }
   };
+
   const handleDeleteItem = (key) => {
-    Alert.alert("Delet Item", "Are you sure you want to delete this item.", [
+    Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
       {
         text: "Cancel",
         style: "cancel",
       },
       {
         text: "OK",
-        onPress: () => {
-          setTodos(todos.filter((item) => item.key !== key));
-          updateInfo(todos);
-          Alert.alert("Success Item has been deleted");
+        onPress: async () => {
+          const filteredTodos = todos.filter((item) => item.key !== key);
+          setTodos(filteredTodos);
+          await updateInfo(id, filteredTodos);
+          Alert.alert("Success", "Item has been deleted");
         },
       },
     ]);
   };
+
   if (isLoading) {
     return (
       <View style={styles.loading}>
@@ -82,6 +87,7 @@ export default function Todos() {
       </View>
     );
   }
+
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Name: {user.userName}</Text>
@@ -97,15 +103,11 @@ export default function Todos() {
       <FlatList
         data={todos}
         renderItem={({ item }) => (
-          <View style={{
-            flexDirection: "row",}}>
+          <View style={styles.todoContainer}>
             <TodoItem todo={item.todo} />
-            <Icon
-              name='remove'
-              size={50}
-              color="red"
-              onPress={() => handleDeleteItem(item.key)}
-            />
+            <Pressable onPress={() => handleDeleteItem(item.key)}>
+              <Icon name="remove" size={24} color="red" />
+            </Pressable>
           </View>
         )}
       />
@@ -133,5 +135,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 10,
+  },
+  todoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderBottomColor: "#ccc",
   },
 });

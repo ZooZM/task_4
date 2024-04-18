@@ -23,7 +23,7 @@ const Register = () => {
         router.replace('account/login/login')
     } catch (error) {
         console.log('error', error);
-        setError(error);
+        setError(error.message);
     }
   };
 
@@ -55,7 +55,7 @@ const Register = () => {
       <Pressable>
         <Text style={{ marginTop: 10 }}>Forgot Password</Text>
       </Pressable>
-      <Text>{error.code}</Text>
+      <Text>{error}</Text>
     </View>
   );
 };
