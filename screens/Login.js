@@ -7,6 +7,7 @@ import {
   Text,
   Pressable,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { login, resetPass } from "../firebase/auth";
 
@@ -24,7 +25,7 @@ const Login = () => {
       } catch (error) {
         console.log('error', error);
         setError(error.message); 
-            }
+      }
   };
 
   const handelForgotPass=async ()=>{
@@ -57,7 +58,7 @@ const Login = () => {
       <Pressable onPress={handelForgotPass}>
         <Text style={{ marginTop: 10 }}>Forgot Password</Text>
       </Pressable>
-      <Text>{error.code}</Text>
+      <Text>{error}</Text>
     </View>
   );
 };

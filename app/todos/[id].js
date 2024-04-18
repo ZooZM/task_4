@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import TodoItem from "./components/item";
 import { useState, useEffect } from "react";
-import { getInfo,addTodo } from "../../firebase/auth";
+import { getInfo, updateInfo } from "../../firebase/auth";
 import {
   FlatList,
   StyleSheet,
@@ -11,7 +11,9 @@ import {
   TextInput,
   Button,
   Pressable,
+  Alert,
 } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 export default function Todos() {
   const { id } = useLocalSearchParams();
@@ -24,33 +26,30 @@ export default function Todos() {
       try {
         setIsLoading(true);
         const userinfo = await getInfo(id);
-        
+
         if (userinfo) {
           setUser(userinfo);
-          setTodos(userinfo.Todos)
+          setTodos(userinfo.Todos);
         }
         setIsLoading(false);
       } catch (error) {
         console.error(error);
       }
     };
-   
+
     fetchuser();
   }, [id]);
   const handleAddItem = () => {
     if (textInputValue.trim() !== "") {
-      if(todos){
-        todos.push({
-          todo:textInputValue,
-        done: false});
+     todos.push({
+          key: Date.now(),
+          todo: textInputValue,
+          done: false,
+        });
         setTextInputValue("");
-        addTodo(id,todos);
-      }else{
-      setTodos({todo:textInputValue,done:false});
-      setTextInputValue("");
-      addTodo(uid,todos);
-    }
-    }
+        updateInfo(id, todos);
+      }
+    
   };
   const handleDeleteItem = (key) => {
     Alert.alert("Delet Item", "Are you sure you want to delete this item.", [
@@ -61,7 +60,8 @@ export default function Todos() {
       {
         text: "OK",
         onPress: () => {
-          setData(data.filter((item) => item.key !== key));
+          setTodos(todos.filter((item) => item.key !== key));
+          updateInfo(todos);
           Alert.alert("Success Item has been deleted");
         },
       },
@@ -96,7 +96,18 @@ export default function Todos() {
       </View>
       <FlatList
         data={todos}
-        renderItem={({ item }) => <TodoItem todo={item.todo} />}
+        renderItem={({ item }) => (
+          <View style={{
+            flexDirection: "row",}}>
+            <TodoItem todo={item.todo} />
+            <Icon
+              name='remove'
+              size={50}
+              color="red"
+              onPress={() => handleDeleteItem(item.key)}
+            />
+          </View>
+        )}
       />
     </View>
   );

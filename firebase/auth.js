@@ -33,6 +33,7 @@ async function register(email, password, userName) {
   await setDoc(doc(db, "/users", cred.user.uid), {
     userName: userName,
     email: email,
+    Todos,
   });
   console.log("Document created successfully");
 
@@ -42,10 +43,7 @@ async function register(email, password, userName) {
 
 async function login(email, password) {
    const cred= await signInWithEmailAndPassword(auth, email, password);
-
-    // Check if the user's email is verified
     if (auth.currentUser && !auth.currentUser.emailVerified) {
-      // Return success if email is verified
     throw new Error('not Verified yet');
     } 
     return cred;
@@ -67,9 +65,9 @@ async function getInfo(uid){
       return null;
     }
 }
-async function addTodo(uid,todos){
+async function updateInfo(uid,todos){
 await updateDoc(doc(db,"/users",uid),{
   Todos:todos
 })
 }
-export { register, login,resetPass,getInfo,addTodo };
+export { register, login,resetPass,getInfo,updateInfo };
