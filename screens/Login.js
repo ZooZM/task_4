@@ -8,7 +8,7 @@ import {
   Pressable,
   StyleSheet,
 } from "react-native";
-import { login } from "../firebase/auth";
+import { login, resetPass } from "../firebase/auth";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -19,14 +19,22 @@ const Login = () => {
    
     try {
         const credentials = await login(email, password);
-        router.navigate(`/users/[id]`);
+        console.log(credentials);
+        router.navigate(`/todos/${credentials.user.uid}`);
       } catch (error) {
-        // If there's an error during login, handle it here
         console.log('error', error);
-        setError(error.message); // Set error message state to display to the user
-      }
+        setError(error.message); 
+            }
   };
 
+  const handelForgotPass=async ()=>{
+    try{
+      await resetPass(email);
+      alert("Please check your email to reset your password");
+    }catch(error){
+      console.log('error', error);
+    }
+  }
   return (
     <View style={styles.container}>
       <TextInput
@@ -46,7 +54,7 @@ const Login = () => {
       <Pressable onPress={()=>router.replace("/account/register/register")}>
         <Text style={{ marginTop: 10 }}>Register</Text>
       </Pressable>
-      <Pressable>
+      <Pressable onPress={handelForgotPass}>
         <Text style={{ marginTop: 10 }}>Forgot Password</Text>
       </Pressable>
       <Text>{error.code}</Text>

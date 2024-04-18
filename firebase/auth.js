@@ -9,7 +9,8 @@ import {
   FacebookAuthProvider,
   sendEmailVerification
 } from "firebase/auth";
-import { doc, setDoc,collection } from "firebase/firestore";
+import { get } from "firebase/database";
+import { doc, setDoc,collection, getDoc } from "firebase/firestore";
 // Listen for authentication state to change.
 onAuthStateChanged(auth, (user) => {
   if (user != null) {
@@ -40,15 +41,30 @@ async function register(email, password, userName) {
 }
 
 async function login(email, password) {
-  // Sign in the user with email and password
-    await signInWithEmailAndPassword(auth, email, password);
+   const cred= await signInWithEmailAndPassword(auth, email, password);
 
     // Check if the user's email is verified
     if (auth.currentUser && !auth.currentUser.emailVerified) {
       // Return success if email is verified
     throw new Error('not Verified yet');
     } 
+    return cred;
 }
 
+async function resetPass(email){
+  await sendPasswordResetEmail(auth,email);
+}
 
-export { register, login };
+async function getInfo(uid){
+  const docRef = doc(db, "users", uid);
+    const docSnapshot = await getDoc(docRef);
+    
+    if (docSnapshot.exists()) {
+      const user = docSnapshot.data();
+      return user;
+    } else {
+      // Document does not exist
+      return null;
+    }
+}
+export { register, login,resetPass,getInfo };
