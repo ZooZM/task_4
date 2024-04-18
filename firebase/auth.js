@@ -10,7 +10,7 @@ import {
   sendEmailVerification
 } from "firebase/auth";
 import { get } from "firebase/database";
-import { doc, setDoc,collection, getDoc } from "firebase/firestore";
+import { doc, setDoc,collection, getDoc, updateDoc } from "firebase/firestore";
 // Listen for authentication state to change.
 onAuthStateChanged(auth, (user) => {
   if (user != null) {
@@ -67,4 +67,9 @@ async function getInfo(uid){
       return null;
     }
 }
-export { register, login,resetPass,getInfo };
+async function addTodo(uid,todos){
+await updateDoc(doc(db,"/users",uid),{
+  Todos:todos
+})
+}
+export { register, login,resetPass,getInfo,addTodo };
