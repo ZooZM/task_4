@@ -16,14 +16,15 @@ const Login = () => {
   const [error, setError] = useState("");
 
   const handleLogin = async () => {
+   
     try {
         const credentials = await login(email, password);
-        console.log('credentials', credentials);
         router.navigate(`/users/[id]`);
-    } catch (error) {
-        console.log('error', JSON.stringify(error));
-        setError(error);
-    }
+      } catch (error) {
+        // If there's an error during login, handle it here
+        console.log('error', error);
+        setError(error.message); // Set error message state to display to the user
+      }
   };
 
   return (

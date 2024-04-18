@@ -11,30 +11,30 @@ import {
 import { register } from "../firebase/auth";
 
 const Register = () => {
-    // const [userName, setUserName] = useState("");
+    const [userName, setUserName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
   const handlePress = async () => {
     try {
-        const credentials = await register(email, password);
+        const credentials = await register(email, password,userName);
         console.log('credentials', credentials);
-        router.navigate(`/home`);
+        router.replace('account/login/login')
     } catch (error) {
-        console.log('error', JSON.stringify(error));
+        console.log('error', error);
         setError(error);
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* <TextInput
+      <TextInput
         placeholder="Name"
         value={userName}
         onChangeText={setUserName}
         style={{ borderWidth: 1, padding: 10, marginBottom: 10 }}
-      /> */}
+      />
       <TextInput
         placeholder="Email"
         value={email}
