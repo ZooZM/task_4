@@ -1,5 +1,6 @@
-import { Stack } from "expo-router";
-
+import { Stack, router } from "expo-router";
+import { Button,Pressable,Text } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
 export default function RoutLayout (){
     return(
         <Stack>
@@ -13,11 +14,22 @@ export default function RoutLayout (){
             <Stack.Screen name="todos/[id]" 
             options={{
                 headerTitle:"Details Page",
+                headerRight: () => (
+                    
+                   <Pressable onPress={()=> router.push('chat/[id]')}>
+                    <Icon name='comment' size={25} color={'blue'}/>
+                   </Pressable>
+                  ),
             }} />
             <Stack.Screen name="account/register/register"
             options={{
                 headerTitle:"Register",
             }} />
+            <Stack.Screen name="chat/[id]" 
+            options={{
+                headerTitle:"Chat page",
+            }}
+            />
              <Stack.Screen name="account/login/login"
             options={{
                 headerTitle:"Login",

@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
     backgroundColor: "pink",
     padding: 16,
     justifyContent: "space-between",
-    width: screenWidth * 0.878,
+    width: screenWidth * 0.5,
     margin: 8,
   },
   text: {

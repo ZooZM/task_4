@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import TodoItem from "./components/item";
 import { useState, useEffect } from "react";
-import { getInfo, updateInfo } from "../../firebase/auth";
+import { getInfo, updateInfo, addTodo, deletetodo } from "../../firebase/firestore_fun";
 import {
   FlatList,
   StyleSheet,
@@ -14,23 +14,23 @@ import {
   Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { deleteDoc } from "firebase/firestore";
 
 export default function Todos() {
   const { id } = useLocalSearchParams();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({});
   const [todos, setTodos] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [textInputValue, setTextInputValue] = useState("");
-  
+
   useEffect(() => {
     const fetchuser = async () => {
       try {
         setIsLoading(true);
         const userinfo = await getInfo(id);
-
         if (userinfo) {
-          setUser(userinfo);
-          setTodos(userinfo.Todo);
+          setUser(userinfo.user);
+          setTodos(userinfo.todos.sort((a, b) => b.date - a.date));
         }
         setIsLoading(false);
       } catch (error) {
@@ -44,32 +44,37 @@ export default function Todos() {
   const handleAddItem = async () => {
     if (textInputValue.trim() !== "") {
       const newTodo = {
-        key: Date.now().toString(),
+        date:  Date.now().toString(),
         todo: textInputValue,
         done: false,
       };
-      setTodos([...todos, newTodo]);
-      await updateInfo(id, [...todos, newTodo]);
+      setTodos([...todos, newTodo].sort((a, b) => b.date - a.date));
+      await addTodo(id, newTodo);
       setTextInputValue("");
     }
   };
 
   const handleDeleteItem = (key) => {
-    Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "OK",
-        onPress: async () => {
-          const filteredTodos = todos.filter((item) => item.key !== key);
-          setTodos(filteredTodos);
-          await updateInfo(id, filteredTodos);
-          Alert.alert("Success", "Item has been deleted");
+    console.log("Delete item called with key:", key);
+    try {
+      Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
+        {
+          text: "Cancel",
+          style: "cancel",
         },
-      },
-    ]);
+        {
+          text: "OK",
+          onPress: async () => {
+            const filteredTodos = todos.filter((item) => item.date !== key);
+            setTodos(filteredTodos);
+            await deletetodo(id, key);
+            Alert.alert("Success", "Item has been deleted");
+          },
+        },
+      ]);
+    } catch (error) {
+      console.error("Error handling delete:", error);
+    }
   };
 
   if (isLoading) {
@@ -105,7 +110,7 @@ export default function Todos() {
         renderItem={({ item }) => (
           <View style={styles.todoContainer}>
             <TodoItem todo={item.todo} />
-            <Pressable onPress={() => handleDeleteItem(item.key)}>
+            <Pressable onPress={() => handleDeleteItem(item.date)}>
               <Icon name="remove" size={24} color="red" />
             </Pressable>
           </View>
