@@ -15,8 +15,7 @@ export default function RoutLayout (){
             options={{
                 headerTitle:"Details Page",
                 headerRight: () => (
-                    
-                   <Pressable onPress={()=> router.push('chat/[id]')}>
+                   <Pressable onPress={()=> router.push(`chat/[id]`)}>
                     <Icon name='comment' size={25} color={'blue'}/>
                    </Pressable>
                   ),

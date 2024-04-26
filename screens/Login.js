@@ -10,6 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { login, resetPass } from "../firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -22,6 +23,7 @@ const Login = () => {
         const credentials = await login(email, password);
         console.log(credentials);
         router.navigate(`/todos/${credentials.user.uid}`);
+       await AsyncStorage.setItem('uid',credentials.user.uid)
       } catch (error) {
         console.log('error', error);
         setError(error.message); 

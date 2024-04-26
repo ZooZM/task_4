@@ -14,7 +14,6 @@ import {
   Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { deleteDoc } from "firebase/firestore";
 
 export default function Todos() {
   const { id } = useLocalSearchParams();

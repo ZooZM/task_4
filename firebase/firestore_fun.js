@@ -22,38 +22,60 @@ async function getInfo(userId) {
   }
   const user = userSnap.data();
 
-  // Get todos collection
   const todosRef = collection(userRef, "todos");
 
-  // Get documents from todos collection
   const todosQuerySnapshot = await getDocs(todosRef);
   const todos = [];
   todosQuerySnapshot.forEach((doc) => {
     todos.push(doc.data());
   });
 
-  // Get messages collection
-  const messagesRef = collection(userRef, "messages");
+//   const messagesRef = collection(userRef, "messages");
 
-  // Get documents from messages collection
-  const messagesQuerySnapshot = await getDocs(messagesRef);
-  const messages = [];
-  messagesQuerySnapshot.forEach((doc) => {
-    messages.push(doc.data());
-  });
+//   const messagesQuerySnapshot = await getDocs(messagesRef);
+//   const messages = [];
+//   messagesQuerySnapshot.forEach((doc) => {
+//     messages.push(doc.data());
+//   });
 
   return {
     user: user,
     todos: todos,
-    messages: messages,
+    // messages: messages,
   };
 }
+async function addMes(uId,data){
+    const userRef = doc(db, "messages", uId);
 
-async function updateInfo(path, docId, data) {
-  await updateDoc(doc(db, path, docId), {
-    data,
-  });
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) {
+      console.log("User not found");
+      return null;
+    }
+  
+    const MessageRef = collection(userRef, "userMessages");
+  
+    await addDoc(MessageRef, {
+      todo: data.title,
+      date: data.date,
+      uId: data.uId,
+    });
+  
+    console.log("Todo added successfully");
 }
+async function getMes () {
+  try {
+    const messagesRef = collection(db, "messages",);
+    const snapshot = await getDocs(messagesRef);
+    const messages = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    console.log(messages);
+    return messages;
+  } catch (error) {
+    console.error("Error getting messages:", error);
+    return [];
+  }
+};
+
 async function deletetodo(uId, key) {
    try {
      const userRef = doc(db, "users", uId);
@@ -71,17 +93,14 @@ async function deletetodo(uId, key) {
 async function addTodo(userId, data) {
   const userRef = doc(db, "users", userId);
 
-  // Check if the user exists
   const userSnap = await getDoc(userRef);
   if (!userSnap.exists()) {
     console.log("User not found");
     return null;
   }
 
-  // Get todos collection
   const todosRef = collection(userRef, "todos");
 
-  // Add todo document to the todos collection
   await addDoc(todosRef, {
     todo: data.todo,
     date: data.date,
@@ -90,4 +109,4 @@ async function addTodo(userId, data) {
 
   console.log("Todo added successfully");
 }
-export { getInfo, updateInfo, addTodo, deletetodo };
+export { getInfo, addMes, addTodo, deletetodo,getMes };

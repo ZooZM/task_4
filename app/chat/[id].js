@@ -1,92 +1,177 @@
-import { useState, useEffect } from "react";
-import {
-    FlatList,
-    StyleSheet,
-    View,
-    Text,
-    ActivityIndicator,
-    TextInput,
-    Button,
-    Pressable,
-    Alert,
-  } from "react-native";
-  import Icon from "react-native-vector-icons/FontAwesome";
+// Chat.js
 
-export default function Chat(){
+import React, { useEffect, useState } from "react";
+import {
+  FlatList,
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  Pressable,
+} from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
+import MessageItem from "./components/mesitem";
+import RightMessageItem from "./components/right_mes_item";
+import { getMes } from "../../firebase/firestore_fun";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { auth, db } from "../../firebase/Config";
+import {
+  doc,
+  setDoc,
+  collection,
+  getDoc,
+  updateDoc,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  query,
+  where,
+  onSnapshot
+} from "firebase/firestore";
+
+export default function Chat() {
+  const [uId, setUId] = useState();
   const [textInputValue, setTextInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState([{
-    title:"hi",
-    
-  }]);
-  const handleSendMes=()=>{
+  const [messages, setMessages] = useState([]);
 
-  }
-    return(
-        <View style={styles.container}>
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        setIsLoading(true);
+        const temp_uid = await AsyncStorage.getItem("uid");
+        setUId(temp_uid);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching user ID:", error);
+      }
+    };
+    fetchUserId();
+  }, []);
 
-        <View style={styles.add}>
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        if (uId) {
+          const messagesRef = collection(db, "messages");
+        
+        const unsubscribe = onSnapshot(messagesRef, (snapshot) => {
+          const updatedMessages = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+          setMessages(updatedMessages.sort((a, b) => b.date - a.date));
+        });
+
+        return () => unsubscribe();
+        }
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+      }
+    };
+    fetchMessages();
+  }, [uId]);
+
+  const handleSendMes = async () => {
+    if (textInputValue.trim() !== "") {
+      try {
+        // Create a reference to the 'messages' collection
+        const messagesRef = collection(db, "messages");
+        const newMes = {
+          date: Date.now().toString(),
+          message: textInputValue,
+          userId: uId,
+        };
+        // Create a new message document with the current user's ID as the document ID
+        const newMessageRef = await addDoc(messagesRef, newMes);
+        setMessages([...messages, newMes].sort((a, b) => b.date - a.date));
+        console.log("Message added successfully with ID: ", newMessageRef.id);
+        setTextInputValue("");
+      } catch (error) {
+        console.error("Error adding message: ", error);
+      }
+    }
+  };
+
+  const handleDeleteItem = async (id) => {
+    try {
+      // Remove the message document from Firestore
+      await deleteDoc(doc(db, "messages", id));
+  
+      // Update the messages state to reflect the deletion
+      const updatedMessages = messages.filter((message) => message.id !== id);
+      setMessages(updatedMessages);
+    } catch (error) {
+      console.error("Error deleting message:", error);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={messages}
+        renderItem={({ item }) => {
+          if (item.userId == uId) {
+            return (
+              <View style={[styles.todoContainer]}>
+                <MessageItem mes={item.message} />
+
+                <Pressable onPress={() => handleDeleteItem(item.id)}>
+                  <Icon name="remove" size={24} color="red" />
+                </Pressable>
+              </View>
+            );
+          } else {
+            return (
+              <View style={[styles.todoContainer]}>
+                <RightMessageItem mes={item.message} />
+              </View>
+            );
+          }
+        }}
+        inverted
+      />
+
+      <View style={styles.add}>
         <TextInput
-        style={styles.input}
-          placeholder="" 
-          
+          style={styles.input}
+          placeholder="Type your message..."
           value={textInputValue}
           onChangeText={setTextInputValue}
         />
-        <Icon name="send" color={"lightblue"} onPress={handleSendMes} size={30} />
+        <Icon
+          name="send"
+          color={"lightblue"}
+          onPress={handleSendMes}
+          size={30}
+        />
       </View>
-      <FlatList
-        data={messages}
-        renderItem={({ item }) => (
-          <View style={styles.todoContainer}>
-            <TodoItem todo={item.title} />
-            <Pressable onPress={() => handleDeleteItem(item.date)}>
-              <Icon name="remove" size={24} color="red" />
-            </Pressable>
-          </View>
-        )}
-      />
-        </View>
-    )
+    </View>
+  );
 }
 
-
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "flex-end", // Push content to the bottom of the screen
-        alignItems: "center",
-        padding: 10, // Add padding for better spacing
-      },
-      add: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 10, // Adjust vertical margin
-        paddingHorizontal: 10, // Add horizontal padding
-        borderRadius: 10,
-        backgroundColor: "#fff",
-        elevation: 3, // Add elevation for a shadow effect
-      },
-    text: {
-      fontSize: 18,
-      marginBottom: 10,
-    },
-    loading: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    input: {
-        flex: 1, 
-        height:50,
-      },
-    todoContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      borderBottomColor: "#ccc",
-    },
-  });
+  container: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    padding: 10,
+  },
+  add: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    elevation: 3,
+  },
+  input: {
+    flex: 1,
+    height: 50,
+  },
+  todoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    marginVertical: 2,
+  },
+});

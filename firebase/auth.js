@@ -78,37 +78,57 @@ onAuthStateChanged(auth, (user) => {
 // })
 // }
 async function register(email, password, userName) {
+  // Create user with email and password
   const cred = await createUserWithEmailAndPassword(auth, email, password);
+
+  // Send email verification
   await sendEmailVerification(auth.currentUser, {
     handleCodeInApp: true,
     url: "http://list2020-4861f.firebaseapp.com/",
   });
-  const userRef = doc(db, "users", cred.user.uid);
 
+  // Create user document in 'users' collection
+  const userRef = doc(db, "users", cred.user.uid);
   await setDoc(userRef, {
     userName: userName,
     email: email,
   });
 
+  // Create 'todos' subcollection for user
   const todosRef = collection(userRef, "todos");
-
-  const messagesRef = collection(userRef, "messages");
-
+  // Add initial todo for the user
   await addDoc(todosRef, {
-    date: new Date(),
-    todo: "first todo",
+    date: Date.now().toString(),
+    todo: "First todo",
     done: false,
   });
-  await addDoc(messagesRef, {});
-  console.log("Document created successfully");
+
+  // Create 'messages' subcollection for user
+  // const messagesRef = collection(db, "messages");
+  // const userMessagesRef = doc(messagesRef, cred.user.uid);
+  // // Add initial message for the user
+  // await setDoc(userMessagesRef, {
+  //   userName: userName,
+  //   email: email,
+  // });
+  // // Create 'userMessages' subcollection under the user's 'messages' collection
+  // const userMessagesSubcollectionRef = collection(userMessagesRef, "userMessages");
+  // await addDoc(userMessagesSubcollectionRef, {
+  //   date: Date.now().toString(),
+  //   message: "First message",
+  //   done: false,
+  // });
+
+  console.log("User registered successfully");
 
   return cred;
 }
+
 async function login(email, password) {
   const cred = await signInWithEmailAndPassword(auth, email, password);
-  if (!cred.user.emailVerified) {
-    throw new Error("not emailVerified");
-  }
+  // if (!cred.user.emailVerified) {
+  //   throw new Error("not emailVerified");
+  // }
   return cred;
 }
 
